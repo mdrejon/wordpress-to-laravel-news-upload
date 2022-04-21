@@ -1,0 +1,30 @@
+INSERT INTO backup_post_data (SELECT '',p.id AS post_id,p.post_title as news_title,p.post_name as news_slug,p.post_content as news_desc, pm2.meta_value AS news_img,p.post_date as created_at,p.post_modified as updated_at, 0 as CatID,t.CategoryIDs,t.CatNames,ptags.post_tags,pseo.seo_desc,pseof.seo_focus
+ FROM `bmp_posts` AS p
+ INNER JOIN `bmp_postmeta` AS pm1 ON p.id = pm1.post_id
+ INNER JOIN `bmp_postmeta` AS pm2 ON pm1.meta_value = pm2.post_id
+ AND pm2.meta_key = '_wp_attached_file'
+ AND pm1.meta_key = '_thumbnail_id'
+ 
+ left join 
+ (select post_id,meta_value as seo_desc from bmp_postmeta where meta_key = '_yoast_wpseo_metadesc') pseo on pseo.post_id = p.ID
+ 
+ left join 
+ (select post_id,meta_value as seo_focus from bmp_postmeta where meta_key = '_yoast_wpseo_focuskw') pseof on pseof.post_id = p.ID
+ 
+ left join
+ (SELECT tr.object_id, GROUP_CONCAT(tm.name SEPARATOR ', ') as CatNames,GROUP_CONCAT(tr.term_taxonomy_id SEPARATOR ', ') as CategoryIDs FROM `bmp_term_relationships` tr 
+ left join bmp_terms tm on tr.term_taxonomy_id = tm.term_id 
+  left join bmp_term_taxonomy btt on tm.term_id = btt.term_id
+  where btt.taxonomy = 'category'
+ Group by object_id) t on p.ID = t.object_id
+                               
+  left join                              
+ (SELECT ptr.object_id, GROUP_CONCAT(ptm.name SEPARATOR ', ') as post_tags FROM `bmp_term_taxonomy` pt 
+left join bmp_terms ptm on ptm.term_id = pt.term_id
+left join bmp_term_relationships ptr on ptr.term_taxonomy_id = pt.term_taxonomy_id
+where pt.taxonomy = 'post_tag' group by ptr.object_id) ptags on p.ID = ptags.object_id
+ 
+ 
+ where p.post_type='post' and p.post_status = 'publish'
+
+ ORDER BY p.id asc);
