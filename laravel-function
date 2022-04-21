@@ -1,0 +1,150 @@
+public function InsertData(){
+       
+        $get_news  = DB::table('backup_post_data')->orderBy('id')->skip(45942)->take(1800)->get();
+        // dd($get_news);
+
+         // $news_view_count = 0; 
+         foreach($get_news as $news){  
+            $news_slug = urldecode("$news->news_slug");
+            $news_id =  news::insertGetId([
+                'news_title' => $news->news_title,
+                'news_slug' => $news_slug,
+                'news_subtitle' => '',
+                'news_desc' => $news->news_desc,
+                'news_img' => $news->news_img,
+                'news_img_caption' => '0',
+                'front_position' => 0,
+                'category_position' => 0,
+                'category_id' => '0',
+                'news_tag' => $news->post_tag,
+                'news_video' => '',
+                'video_url_from' => 0,
+                'news_desk' => '',
+                'video_url' => '',
+                'is_video_page' => 0,
+                'read_time' => '',
+                'meta_title' => $news->news_title,
+                'meta_keyword' => $news->seo_focus,
+                'meta_desc' => $news->seo_desc,
+                'news_parent' => 0,
+                'news_status' => '2',
+                'news_ticker' => 0,
+                'special_news' => 0,
+                'news_view_count' => '0',
+                'role_id' => '0',
+                'update_user' => '0',
+                'update_role' => '0',
+                'lang_code' => 'bn',
+                'user_id' => 1,
+                'created_at' => $news->created_at,
+                'updated_at' => Carbon::now()
+            ]);
+            
+            if($news_id){
+                $CatNames =  explode(",",$news->CatNames);
+                $count_ctgN = count($CatNames);
+                for ($x = 0; $x < $count_ctgN; $x++) {
+                    $ctg_title = $CatNames[$x];
+                    $ctg_slug = preg_replace('/\s+/u', '-', trim($ctg_title));
+                    $ctg_slug = preg_replace("/[~`{}.'\"\!\@\#\$\%\^\&\*\(\)\_\=\+\/\?\>\<\,\[\]\:\;\|\\\]/", "", $ctg_slug);
+                    $get_cat_count  = DB::table('categories')->where('categories_slug', $ctg_slug)->count();
+                    if($get_cat_count > 0){ 
+                        $get_cat  = DB::table('categories')->where('categories_slug', $ctg_slug)->first();
+                        DB::table('ctg_for_news')->insert([
+                            'news_id' => $news_id,
+                            'category_id' => $get_cat->id,
+                            'created_at' => Carbon::now()
+                            ]);
+                    }
+                }
+
+                echo  'News_id : '.$news->id.'| Insert ID : '. $news_id;
+                echo "<br>";
+            }
+
+
+            // $CatNames =  explode(",",$news->CatNames);
+            // $count_ctgN = count($CatNames);
+            // for ($x = 0; $x < $count_ctgN; $x++) {
+            //     $ctg_title = $CatNames[$x];
+            //     $ctg_slug = preg_replace('/\s+/u', '-', trim($ctg_title));
+            //     $ctg_slug = preg_replace("/[~`{}.'\"\!\@\#\$\%\^\&\*\(\)\_\=\+\/\?\>\<\,\[\]\:\;\|\\\]/", "", $ctg_slug);
+            //     $get_cat  = DB::table('categories')->where('categories_slug', $ctg_slug)->first();
+
+
+            //     DB::table('ctg_for_news')->insert([
+            //         'news_id' => $news_id,
+            //         'category_id' => $get_cat->id,
+            //         'created_at' => Carbon::now()
+            //         ]);
+                // dd($get_cat);
+            //    if($get_cat == 0){
+
+            //     $ctg_title = $CatNames[$x];
+            //     $ctg_slug = preg_replace('/\s+/u', '-', trim($ctg_title));
+            //     $ctg_slug = preg_replace("/[~`{}.'\"\!\@\#\$\%\^\&\*\(\)\_\=\+\/\?\>\<\,\[\]\:\;\|\\\]/", "", $ctg_slug);
+
+            //     DB::table('categories')->insert([
+            //         'user_id' => 1,
+            //         'categories_name' => $ctg_title,
+            //         'categories_slug' => $ctg_slug,
+            //         'categories_parent' => 0,
+            //         'categories_img' => '',
+            //         'categories_order' => 0,
+            //         'categories_status' => 3,
+            //         'is_menu' => 0,
+            //         'is_mobile_menu' => 0,
+            //         'is_recent' => 0,
+            //         'meta_title' => '',
+            //         'meta_keyword' => '',
+            //         'meta_desc' => '',
+            //         'deleted_at' => '',
+            //         'lang_code' => 'bn',
+            //         'parent_lang' => 0,
+            //         'created_at' => Carbon::now(),
+            //         'updated_at' => Carbon::now()
+            //     ]);
+            //    }
+            // } 
+
+            // dd($news_id);
+            //     if($news_id !=''){
+                   
+            //     }
+            //     foreach($category_id as $ctg_id){
+            //         ctgForNews::insert([
+            //             'news_id' => $news_id,
+            //             'category_id' => $ctg_id,
+            //             'created_at' => Carbon::now()
+            //         ]);
+            //     }
+            //     if($request->front_position != 0 ){
+            //         $update_frontPosition =  \DB::table('news')
+            //         ->where('front_position', $request->front_position)
+            //         ->where('lang_code', $request->lang_code)
+            //         ->whereNotIN('id', array($news_id))
+            //         ->update(['front_position' => 0]);
+            //     }
+            //     if($request->category_position != 0 ){
+            //         $update_ctgPosition =  \DB::table('news')
+            //         ->where('category_position', $request->category_position)
+            //         ->whereNotIN('id', array($news_id))
+            //         ->update(['category_position' => 0]);
+            //     }
+                
+            //     $response = $this->sendMessage($news_id);
+            //     $return["allresponses"] = $response;
+            //     $return = json_encode($return);
+    
+            //     $data = json_decode($response, true);
+            //     // print_r($data);
+            //     // $id = $data['id'];
+            //     // print_r($id);
+    
+            //     // print("\n\nJSON received:\n");
+            //     // print($return);
+            //     // print("\n");
+            // }
+         }
+       
+     }
